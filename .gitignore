@@ -1,0 +1,15 @@
+# Proprietary firmware and extracted images
+*.nfu
+*.img
+*.apk
+*.dex
+*.so
+*.bin
+
+# Local analysis output
+/work/
+/extracted/
+/reports/
+__pycache__/
+*.py[cod]
+.DS_Store
