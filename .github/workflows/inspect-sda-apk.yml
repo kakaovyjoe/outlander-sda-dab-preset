@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "work/GuiApp.apk"
+      - "work/GuiApp.apk.part1"
+      - "work/GuiApp.apk.part2"
       - ".github/workflows/inspect-sda-apk.yml"
   workflow_dispatch:
 
@@ -18,11 +20,15 @@ jobs:
       - name: Check out private analysis repository
         uses: actions/checkout@v4
 
-      - name: Check input APK
+      - name: Reassemble and check input APK
         shell: bash
         run: |
-          test -f work/GuiApp.apk || { echo "::error::Missing work/GuiApp.apk. Upload the original APK as described in README."; exit 1; }
-          sha256sum work/GuiApp.apk | tee apk-sha256.txt
+          if [ ! -f work/GuiApp.apk ]; then
+            test -f work/GuiApp.apk.part1 || { echo "::error::Missing work/GuiApp.apk.part1"; exit 1; }
+            test -f work/GuiApp.apk.part2 || { echo "::error::Missing work/GuiApp.apk.part2"; exit 1; }
+            cat work/GuiApp.apk.part1 work/GuiApp.apk.part2 > work/GuiApp.apk
+          fi
+          echo "7155c4429bee06cc2066c6500b3ae5afa9e7d2187303e1cd62738abbed0c0ad8  work/GuiApp.apk" | sha256sum -c -
           unzip -t work/GuiApp.apk
 
       - name: Set up Java
@@ -49,7 +55,7 @@ jobs:
           done < analysis/dex-list.txt
           {
             echo "APK SHA-256:"
-            cat apk-sha256.txt
+            sha256sum work/GuiApp.apk
             echo
             echo "DEX files:"
             cat analysis/dex-list.txt
@@ -66,5 +72,4 @@ jobs:
             analysis/REPORT.txt
             analysis/dex-list.txt
             analysis/smali/
-            apk-sha256.txt
           retention-days: 7
