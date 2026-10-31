@@ -4,38 +4,45 @@ Date: 2026-10-31
 
 ## Confirmed from the original 1G APK
 
-- The DAB library handles the hard forward/backward skip events separately from the on-screen forward/back skip controls.
-- A short press on either hard-skip event originally sends the DAB manual-search command (up/down).
-- The DAB model exposes the current one-based preset number through subject `0x101d9`.
-- The complete preset list is exposed through subject `0x101ee`.
-- Preset numbers are one-based: bank 1 = 1–6, bank 2 = 7–12, bank 3 = 13–18.
-- The existing preset UI checks a slot by its short service label or channel text; the patch applies the same occupied-slot rule.
-- The existing DAB model command `EntDabModelIndChangePresetCommand` sends an explicit preset number to the native DAB layer.
+- `EntDabLibrary` receives hard forward/backward skip events. The event enum maps ordinal 2 to `SHORTPRESS`; this is the exact event changed below.
+- A short press on either DAB hard-skip event originally sends the DAB manual-search command (up/down).
+- The on-screen DAB preset UI uses `EntDabModelIndChangePresetCommand` with one-based preset numbers.
+- The DAB model exposes the current preset number through subject `0x101d9`.
+- The full preset list is exposed through subject `0x101ee`; the UI displays three banks of six positions, numbered 1–18.
+- A slot is occupied when either its short service label or channel text is non-empty.
+- The UI also filters populated slots by the selected DAB band in subject `0x101e1`: it allows all bands in `ALL` mode, otherwise only a matching band. The patch mirrors this rule.
+- The existing DAB command dispatch sends the explicit preset number to the native DAB layer.
 
 ## Patch behavior
 
-The patch script changes only the DAB hard forward/back short-press handlers:
+Only the DAB hard forward/back **SHORTPRESS** handlers are changed:
 
-- right/forward short press: next occupied preset;
-- left/back short press: previous occupied preset;
-- scans all 18 positions and wraps at both ends;
-- empty positions are skipped;
-- uses the existing change-preset model command.
+- Right/forward short press selects the next occupied eligible preset.
+- Left/back short press selects the previous occupied eligible preset.
+- It checks all 18 positions, skips empty slots and band-mismatched slots, and wraps at both ends.
+- If only one eligible preset exists, a full scan returns to that same preset rather than doing nothing.
+- If no current preset is reported, forward starts at preset 1 and backward starts at preset 18.
+- Selection is sent through the original `EntDabModelIndChangePresetCommand`.
 
-The on-screen DAB search controls are unchanged. Long-press/repeat-search paths are unchanged. Volume controls are not handled by `EntDabLibrary` and are not modified by this patch.
+The on-screen search controls are untouched. Long-press, repeat-press and seek-stop paths are untouched. The patch does not change volume handling or the up/down volume keys.
 
-## Build validation
+## Static tests and build validation
 
-GitHub Actions run: [41194937933](https://github.com/kakaovyjoe/outlander-sda-dab-preset/actions/runs/41194937933)
+GitHub Actions run: [41196044899](https://github.com/kakaovyjoe/outlander-sda-dab-preset/actions/runs/41196044899)
 
-- Original APK SHA-256: `7155c4429bee06cc2066c6500b3ae5afa9e7d2187303e1cd62738abbed0c0ad8`
-- Patched classes.dex SHA-256: `337a89b23f699ff56cb9ae4da13e2251b5e4f6ed776b99cc44f6caf752d387be`
-- Unsigned preview APK SHA-256: `79454feaacd8b394dd562700d9b459bf7b883a64d715be4d8f381297bfe54225`
-- Smali assembly succeeded.
+- Reassembly of the two uploaded APK parts and original APK SHA-256 check succeeded.
+- DEX disassembly succeeded.
+- Patch script completed, and Smali assembly of the modified DEX succeeded.
 - Repacked APK ZIP integrity check succeeded.
+- A separate algorithm simulation passed checks for next/previous direction, wrap-around, empty-slot skipping, band filtering, and the one-preset case.
+
+Hashes:
+- Original APK SHA-256: `7155c4429bee06cc2066c6500b3ae5afa9e7d2187303e1cd62738abbed0c0ad8`
+- Patched `classes.dex` SHA-256: `84007435c3e87a02ae2234178ab2568bd500f9a94975c4b84388d88decc00d55`
+- Unsigned validation APK SHA-256: `66d4a5fa31f84eb6f7a9fccfb23d544473d1ef0fd60089b83254a9be44efa2b7`
 
 ## Important installation limitation
 
-The original APK contains a v1 signing certificate whose subject is `CN=Android Debug, O=Android, C=US`. The APK contains only the public certificate/signature data, not the original private signing key. Changing `classes.dex` invalidates the original APK signature.
+The original APK's v1 certificate subject is `CN=Android Debug, O=Android, C=US` (SHA-256 fingerprint `DD:B1:20:E4:C2:93:A6:0F:8C:A8:6F:0D:47:84:AB:21:93:F3:C2:5A:1A:E6:87:D8:AD:8D:3B:D4:43:EF:6E:78`). The private signing key is not embedded in the APK; only the public certificate/signature data is present. Changing `classes.dex` invalidates the original signature.
 
-Therefore `GuiApp-patched-unsigned.apk` is a validation artifact only. It is **not installable and must not be copied into the firmware or flashed**. Before any in-vehicle test, the signing/update mechanism and a verified recovery route must be established. No change has been installed in the vehicle.
+Therefore `GuiApp-patched-unsigned.apk` is a **validation artifact only**, not an installation package. Do not install it or copy it into the firmware. Before any in-vehicle test, the correct system-app signing/update path and a verified recovery method must be established. No change has been installed in the vehicle.
