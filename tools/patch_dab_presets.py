@@ -88,7 +88,7 @@ HELPER = r'''
     invoke-virtual {v8}, Ljava/lang/String;->length()I
     move-result v9
     if-lez v9, :scan_check_channel
-    goto :scan_select_preset
+    goto :scan_check_band
 
     :scan_check_channel
     invoke-virtual {v7}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/Subject/EntDabPresetListItem;->getChannel()Ljava/lang/String;
@@ -98,6 +98,7 @@ HELPER = r'''
     move-result v9
     if-lez v9, :scan_skip_slot
 
+    :scan_check_band
     invoke-virtual {v7}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/Subject/EntDabPresetListItem;->getBand()Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;
     move-result-object v9
     sget-object v8, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;->ALL:Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;
