@@ -38,6 +38,11 @@ HELPER = r'''
     :no_current_preset
     const/4 v3, 0x0
     const/16 v5, 0x12
+    if-lez p1, :no_current_previous
+    goto :scan_init
+
+    :no_current_previous
+    const/4 v3, 0x1
 
     :scan_init
     const/4 v4, 0x0
@@ -73,7 +78,7 @@ HELPER = r'''
     move-result-object v7
     if-eqz v7, :scan_skip_slot
 
-    invoke-virtual {v7}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/Subject/EntDabPresetListItem;->getServicelabel()Ljava/lang/String;
+    invoke-virtual {v7}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/Subject/EntDabPresetListItem;->getShortservicelabel()Ljava/lang/String;
     move-result-object v8
     if-eqz v8, :scan_check_channel
     invoke-virtual {v8}, Ljava/lang/String;->length()I
