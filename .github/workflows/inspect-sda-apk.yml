@@ -7,6 +7,7 @@ on:
       - "work/GuiApp.apk"
       - "work/GuiApp.apk.part1"
       - "work/GuiApp.apk.part2"
+      - "tools/patch_dab_presets.py"
       - ".github/workflows/inspect-sda-apk.yml"
   workflow_dispatch:
 
@@ -55,6 +56,11 @@ jobs:
                 <artifactId>baksmali</artifactId>
                 <version>2.5.2</version>
               </dependency>
+              <dependency>
+                <groupId>org.smali</groupId>
+                <artifactId>smali</artifactId>
+                <version>2.5.2</version>
+              </dependency>
             </dependencies>
           </project>
           POM
@@ -80,6 +86,37 @@ jobs:
             find analysis/smali -type f | grep -E 'EntDab(Library|Model|PresetController|PresetList)|HardKey' | sort || true
           } > analysis/REPORT.txt
 
+      - name: Patch DAB steering-wheel preset selection
+        shell: bash
+        run: |
+          python tools/patch_dab_presets.py analysis/smali/classes
+          java -cp "$(cat analysis/classpath.txt)" org.jf.smali.Main assemble analysis/smali/classes -o analysis/classes-patched.dex
+
+      - name: Create unsigned validation APK
+        shell: bash
+        run: |
+          cp work/GuiApp.apk analysis/GuiApp-patched-unsigned.apk
+          zip -q -d analysis/GuiApp-patched-unsigned.apk 'META-INF/*' || true
+          mkdir -p analysis/repacked
+          cp analysis/classes-patched.dex analysis/repacked/classes.dex
+          (cd analysis/repacked && zip -q -u ../GuiApp-patched-unsigned.apk classes.dex)
+          unzip -t analysis/GuiApp-patched-unsigned.apk
+          {
+            echo "Patch: DAB hard forward/back short press now selects next/previous occupied preset"
+            echo "Preset range: 1..18 (three banks, six positions each)"
+            echo "Current preset subject: 0x101d9"
+            echo "Preset list subject: 0x101ee"
+            echo "Original APK SHA-256:"
+            sha256sum work/GuiApp.apk
+            echo "Patched classes.dex SHA-256:"
+            sha256sum analysis/classes-patched.dex
+            echo "Patched APK SHA-256:"
+            sha256sum analysis/GuiApp-patched-unsigned.apk
+            echo
+            echo "This APK is deliberately unsigned: changing classes.dex invalidates the original signature."
+            echo "It is a validation artifact only, not ready to install or flash."
+          } > analysis/patch-report.txt
+
       - name: Upload disassembly for review
         uses: actions/upload-artifact@v4
         with:
@@ -88,4 +125,15 @@ jobs:
             analysis/REPORT.txt
             analysis/dex-list.txt
             analysis/smali/
+          retention-days: 7
+
+      - name: Upload unsigned validation build
+        uses: actions/upload-artifact@v4
+        with:
+          name: outlander-sda-dab-patch-preview
+          path: |
+            analysis/GuiApp-patched-unsigned.apk
+            analysis/classes-patched.dex
+            analysis/patch-report.txt
+            tools/patch_dab_presets.py
           retention-days: 7
