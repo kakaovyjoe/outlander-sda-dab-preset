@@ -58,7 +58,7 @@ jobs:
             </dependencies>
           </project>
           POM
-          mvn --batch-mode --quiet -f analysis/pom.xml org.apache.maven.plugins:maven-dependency-plugin:3.8.1:build-classpath -Dmdep.outputFile=analysis/classpath.txt
+          mvn --batch-mode --quiet -f analysis/pom.xml org.apache.maven.plugins:maven-dependency-plugin:3.8.1:build-classpath -Dmdep.outputFile=classpath.txt
           while IFS= read -r dex; do
             mkdir -p "analysis/raw/$(dirname "$dex")"
             unzip -p work/GuiApp.apk "$dex" > "analysis/raw/$dex"
