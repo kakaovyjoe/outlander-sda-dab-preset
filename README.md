@@ -52,10 +52,11 @@ python tools/inspect_nfu.py cesta/k/firmware.nfu --extract-system /bezpecna/prac
 
 ## Stav úpravy DAB tlačítek na volantu (31. 10. 2026)
 
-- Byla připravena a úspěšně zkompilována změna krátkého stisku hardwarových šipek DAB: vpřed/vzad prochází obsazené uložené předvolby 1–18, přeskakuje prázdné pozice a obíhá mezi začátkem a koncem.
-- Ovládání vyhledávání na obrazovce zůstává beze změny. Dlouhé podržení / opakované hledání také zůstává původní. Hlasitost není součástí upravované DAB knihovny.
-- GitHub Actions úspěšně sestavil kontrolní DEX a přebalený APK archiv. Výsledek je zatím **nepodepsaný validační náhled**, nikoli soubor k instalaci.
-- Původní APK obsahuje pouze veřejná data podpisového certifikátu Android Debug; privátní podpisový klíč ve firmwaru ani APK není. Modifikovaný APK proto nelze bezpečně nainstalovat jako aktualizaci původní aplikace.
-- **Neinstalovat a neflashovat** validační APK. Před jakýmkoli testem v jednotce je nutné vyřešit kompatibilní podpis/aktualizační cestu a ověřenou obnovu jednotky.
+- Úspěšně zkompilovaná změna zasahuje pouze krátký stisk (SHORTPRESS) levé/pravé hardwarové šipky v DAB režimu.
+- Pravá šipka vybírá další obsazenou předvolbu, levá předchozí. Procházení zahrnuje všech 18 míst ve třech bankách, přeskočí prázdné i neodpovídající pásmo a cykluje na obou koncích.
+- Při jediné uložené stanici se po úplném průchodu vrátí na ni. Dlouhé podržení, opakované hledání, on-screen ovládání a hlasitost zůstávají původní.
+- GitHub Actions úspěšně provedl rozklad DEX, aplikaci patch skriptu, sestavení DEX i kontrolu přebaleného APK.
+- Výstup je stále **nepodepsaný validační náhled**, nikoli soubor k instalaci. Originální APK je podepsané certifikátem Android Debug; odpovídající privátní podpisový klíč není obsažen v APK.
+- **Neinstalovat a neflashovat** validační APK. Před testem v jednotce je nutné prokázat kompatibilní systémovou aktualizační cestu a ověřený postup obnovy.
 
-Podrobnosti: [reports/dab-patch-validation.md](reports/dab-patch-validation.md). Výsledek GitHub Actions: https://github.com/kakaovyjoe/outlander-sda-dab-preset/actions/runs/41194937933.
+Podrobnosti a hashe: [reports/dab-patch-validation.md](reports/dab-patch-validation.md). Úspěšný běh: https://github.com/kakaovyjoe/outlander-sda-dab-preset/actions/runs/41196044899.
