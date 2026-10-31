@@ -29,15 +29,15 @@ Tento repozitář je určen pro analýzu a přípravu, nikoli pro okamžité fla
 
 ### Co je potřeba dodat pro analýzu APK
 
-Workflow očekává původní `GuiApp.apk` v cestě `work/GuiApp.apk`.
+Workflow očekává původní `GuiApp.apk`. Protože GitHub web nepřijme soubor této velikosti v jednom kuse, použij dva části:
 
 1. Zkontroluj, že repozitář `kakaovyjoe/outlander-sda-dab-preset` je **Private**.
-2. Z původního obrazu systému použij APK `/app/GuiApp.apk` (ne upravenou nebo znovu podepsanou kopii).
-3. V GitHubu otevři repozitář, zvol **Add file → Upload files** a nahraj APK do složky `work` pod názvem `GuiApp.apk`.
-4. Potvrď commit do větve `main`. Tím se automaticky spustí workflow **Inspect original SDA APK (read-only)**.
+2. Vytvoř v repozitáři složku `work` (například **Add file → Create new file**, název `work/.gitkeep`, potom commit).
+3. Otevři složku `work` a přes **Add file → Upload files** nahraj oba soubory `GuiApp.apk.part1` a `GuiApp.apk.part2`.
+4. Potvrď commit do větve `main`. Workflow je automaticky spojí ve správném pořadí, ověří SHA-256 a provede kontrolu APK.
 5. Po dokončení otevři běh workflow → **Artifacts** → `outlander-sda-smali-analysis` a stáhni ZIP. Pro další práci budou potřeba zejména soubory tříd `EntDabLibrary`, `EntDabModel`, `EntDabPresetController` a `EntDabPresetList`.
 
-**Upozornění k soukromí:** nahráním APK se její binární obsah uloží do historie tohoto Git repozitáře. I když je repozitář soukromý, dělej to pouze tehdy, pokud s tím souhlasíš. Po analýze lze naplánovat odstranění souboru z aktuální větve, ale odstranění commitu samo o sobě nevymaže starší historii.
+**Upozornění k soukromí:** nahráním obou částí se binární obsah APK uloží do historie tohoto Git repozitáře. I když je repozitář soukromý, dělej to pouze tehdy, pokud s tím souhlasíš. Po analýze lze naplánovat odstranění souborů z aktuální větve, ale odstranění commitu samo o sobě nevymaže starší historii.
 
 Workflow vyžaduje přístup k Maven Central pro stažení Baksmali. Výstupní artefakt je dočasný (7 dní). Tento krok nic nemění na rádiu.
 
