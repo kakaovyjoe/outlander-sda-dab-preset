@@ -106,7 +106,7 @@ HELPER = r'''
     goto :scan_select_preset
 
     :check_preset_band
-    if-eqz v10, :scan_select_preset
+    if-eqz v10, :scan_skip_slot
     if-ne v10, v9, :scan_skip_slot
 
     :scan_select_preset
