@@ -49,3 +49,13 @@ Vyžaduje Python 3.10+ a původní soubor NFU, který zůstává mimo Git:
 python tools/inspect_nfu.py cesta/k/firmware.nfu
 python tools/inspect_nfu.py cesta/k/firmware.nfu --extract-system /bezpecna/pracovni/slozka
 ```
+
+## Stav úpravy DAB tlačítek na volantu (31. 10. 2026)
+
+- Byla připravena a úspěšně zkompilována změna krátkého stisku hardwarových šipek DAB: vpřed/vzad prochází obsazené uložené předvolby 1–18, přeskakuje prázdné pozice a obíhá mezi začátkem a koncem.
+- Ovládání vyhledávání na obrazovce zůstává beze změny. Dlouhé podržení / opakované hledání také zůstává původní. Hlasitost není součástí upravované DAB knihovny.
+- GitHub Actions úspěšně sestavil kontrolní DEX a přebalený APK archiv. Výsledek je zatím **nepodepsaný validační náhled**, nikoli soubor k instalaci.
+- Původní APK obsahuje pouze veřejná data podpisového certifikátu Android Debug; privátní podpisový klíč ve firmwaru ani APK není. Modifikovaný APK proto nelze bezpečně nainstalovat jako aktualizaci původní aplikace.
+- **Neinstalovat a neflashovat** validační APK. Před jakýmkoli testem v jednotce je nutné vyřešit kompatibilní podpis/aktualizační cestu a ověřenou obnovu jednotky.
+
+Podrobnosti: [reports/dab-patch-validation.md](reports/dab-patch-validation.md). Výsledek GitHub Actions: https://github.com/kakaovyjoe/outlander-sda-dab-preset/actions/runs/41194937933.
