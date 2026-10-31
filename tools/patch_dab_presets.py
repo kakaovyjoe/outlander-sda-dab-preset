@@ -7,9 +7,13 @@ from pathlib import Path
 TARGET = Path("com/jvckenwood/ce/add/guiapp/Entertainment/Library/EntDabLibrary.smali")
 HELPER = r'''
 .method private changePresetFromHardKey(I)Z
-    .registers 12
+    .registers 13
     .param p1, "nDirection"    # I (+1 next, -1 previous)
     .prologue
+    const v10, 0x101e1
+    invoke-virtual {p0, v10}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Library/EntDabLibrary;->getSubjectValue(I)Ljava/lang/Object;
+    move-result-object v10
+    check-cast v10, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;
     const v0, 0x101ee
     invoke-virtual {p0, v0}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Library/EntDabLibrary;->getSubjectValue(I)Ljava/lang/Object;
     move-result-object v0
@@ -93,6 +97,16 @@ HELPER = r'''
     invoke-virtual {v8}, Ljava/lang/String;->length()I
     move-result v9
     if-lez v9, :scan_skip_slot
+
+    invoke-virtual {v7}, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/Subject/EntDabPresetListItem;->getBand()Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;
+    move-result-object v9
+    sget-object v8, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;->ALL:Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/EntDabModelDefine$eBandMode;
+    if-ne v10, v8, :check_preset_band
+    goto :scan_select_preset
+
+    :check_preset_band
+    if-eqz v10, :scan_select_preset
+    if-ne v10, v9, :scan_skip_slot
 
     :scan_select_preset
     new-instance v7, Lcom/jvckenwood/ce/add/guiapp/Entertainment/Model/Dab/Command/EntDabModelIndChangePresetCommand;
