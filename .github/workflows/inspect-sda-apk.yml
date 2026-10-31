@@ -43,6 +43,22 @@ jobs:
           mkdir -p analysis
           unzip -Z1 work/GuiApp.apk | grep -E '^classes([0-9]+)?\.dex$' | sort -V > analysis/dex-list.txt
           test -s analysis/dex-list.txt || { echo "::error::No classes*.dex found"; exit 1; }
+          cat > analysis/pom.xml <<'POM'
+          <project xmlns="http://maven.apache.org/POM/4.0.0">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>local.analysis</groupId>
+            <artifactId>outlander-apk-analysis</artifactId>
+            <version>1.0</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.smali</groupId>
+                <artifactId>baksmali</artifactId>
+                <version>2.5.2</version>
+              </dependency>
+            </dependencies>
+          </project>
+          POM
+          mvn --batch-mode --quiet -f analysis/pom.xml org.apache.maven.plugins:maven-dependency-plugin:3.8.1:build-classpath -Dmdep.outputFile=analysis/classpath.txt
           while IFS= read -r dex; do
             mkdir -p "analysis/raw/$(dirname "$dex")"
             unzip -p work/GuiApp.apk "$dex" > "analysis/raw/$dex"
@@ -51,7 +67,7 @@ jobs:
             curl --fail --location --silent --show-error \
               https://repo.maven.apache.org/maven2/org/smali/baksmali/2.5.2/baksmali-2.5.2.jar \
               -o analysis/baksmali.jar
-            java -jar analysis/baksmali.jar disassemble "analysis/raw/$dex" -o "analysis/smali/$name"
+            java -cp "$(cat analysis/classpath.txt)" org.jf.baksmali.Main disassemble "analysis/raw/$dex" -o "analysis/smali/$name"
           done < analysis/dex-list.txt
           {
             echo "APK SHA-256:"
