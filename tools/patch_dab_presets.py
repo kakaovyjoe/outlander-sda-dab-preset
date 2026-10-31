@@ -36,7 +36,7 @@ HELPER = r'''
     const/16 v4, 0x12
     if-lez v3, :no_current_preset
     if-gt v3, v4, :no_current_preset
-    const/16 v5, 0x11
+    const/16 v5, 0x12
     goto :scan_init
 
     :no_current_preset
