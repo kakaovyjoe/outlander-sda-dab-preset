@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p analysis
-          unzip -Z1 work/GuiApp.apk | grep -E '^classes([0-9]+)?\\.dex$' | sort -V > analysis/dex-list.txt
+          unzip -Z1 work/GuiApp.apk | grep -E '^classes([0-9]+)?\.dex$' | sort -V > analysis/dex-list.txt
           test -s analysis/dex-list.txt || { echo "::error::No classes*.dex found"; exit 1; }
           while IFS= read -r dex; do
             mkdir -p "analysis/raw/$(dirname "$dex")"
